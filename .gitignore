@@ -31,3 +31,7 @@ Thumbs.db
 # Ignorar arquivos de IDE
 .vscode/
 .idea/
+
+
+supervisord.log
+supervisord.pid
