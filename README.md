@@ -28,6 +28,7 @@ tarefas:
 - executar em um container docker
 - como implantar?
 - como configurar o logger?
+- como dar permissão no ray para escrever logs?
 
 yfinance - https://pypi.org/project/yfinance/
 
@@ -69,3 +70,9 @@ project/
 │   └── app.py              # frontend simples (Flask/FastAPI + Jinja)
 │
 └── tests/                  # testes unitários e de integração
+
+
+
+Executar os comandos Docker
+docker build -t stocks .
+docker run --shm-size=20g --gpus all -p 8265:8265 -p 8000:8000 -v ${PWD}:/app -it stocks

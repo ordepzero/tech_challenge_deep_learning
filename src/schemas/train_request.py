@@ -12,3 +12,4 @@ class TrainRequest(BaseModel):
     dropout_prob: float = 0.2
     learning_rate: float = 0.001
     window_size: int = 60
+    log_level: str = "INFO"  # DEBUG, INFO, WARNING, ERROR

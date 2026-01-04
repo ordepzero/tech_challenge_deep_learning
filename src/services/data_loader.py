@@ -6,6 +6,9 @@ import os
 from typing import Optional
 from pathlib import Path
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 class StockDataLoader:
     """
@@ -27,8 +30,8 @@ class StockDataLoader:
         self.processed_path = Path(processed_path)
         self.raw_path.mkdir(parents=True, exist_ok=True)
         self.processed_path.mkdir(parents=True, exist_ok=True)
-        print(f"Diretório de dados brutos: '{self.raw_path.resolve()}'")
-        print(f"Diretório de dados processados: '{self.processed_path.resolve()}'")
+        logger.info(f"Diretório de dados brutos: '{self.raw_path.resolve()}'")
+        logger.info(f"Diretório de dados processados: '{self.processed_path.resolve()}'")
 
     def _get_save_path(self, base_path: Path, ticker: str) -> Path:
         """
@@ -63,34 +66,34 @@ class StockDataLoader:
         """Salva um DataFrame de dados brutos."""
         file_path = self._get_save_path(self.raw_path, ticker)
         df.to_csv(file_path)
-        print(f"Dados brutos salvos em: '{file_path}'")
+        logger.info(f"Dados brutos salvos em: '{file_path}'")
         return file_path
     
     def save_processed(self, df: pd.DataFrame, ticker: str) -> str:
         """Salva um DataFrame de dados processados."""
         file_path = self._get_save_path(self.processed_path, ticker)
         df.to_csv(file_path)
-        print(f"Dados processados salvos em: '{file_path}'")
+        logger.info(f"Dados processados salvos em: '{file_path}'")
         return file_path
 
     def load_raw(self, ticker: str, start: Optional[str] = None, end: Optional[str] = None) -> pd.DataFrame:
         """Carrega o conjunto de dados brutos mais recente para um ticker."""
         file_path = self._get_latest_file_path(self.raw_path, ticker)
-        print(f"Carregando dados brutos de: '{file_path}'")
+        logger.info(f"Carregando dados brutos de: '{file_path}'")
         df = pd.read_csv(str(file_path), index_col="Date", parse_dates=True)
 
         if start or end:
             # Garante que o índice seja do tipo Datetime para a filtragem funcionar
             df.index = pd.to_datetime(df.index)
             df = df.loc[start:end]
-            print(f"Dados filtrados entre {start or 'início'} e {end or 'fim'}.")
+            logger.info(f"Dados filtrados entre {start or 'início'} e {end or 'fim'}.")
 
         return df
 
     def load_processed(self, ticker: str) -> pd.DataFrame:
         """Carrega o conjunto de dados processados mais recente para um ticker."""
         file_path = self._get_latest_file_path(self.processed_path, ticker)
-        print(f"Carregando dados processados de: '{file_path}'")
+        logger.info(f"Carregando dados processados de: '{file_path}'")
         # Adapte os parâmetros de leitura se o formato processado for diferente
         df = pd.read_csv(str(file_path), index_col=0, parse_dates=True)
         return df
@@ -133,7 +136,7 @@ class StockDataLoader:
         Returns:
             pd.DataFrame: DataFrame com os dados históricos.
         """
-        print(f"Iniciando download para o ticker: '{ticker}'...")
+        logger.info(f"Iniciando download para o ticker: '{ticker}'...")
         stock = yf.Ticker(ticker)
         data = stock.history(
             period=period,
@@ -145,7 +148,7 @@ class StockDataLoader:
         if data.empty:
             raise ValueError(f"Nenhum dado encontrado para o ticker '{ticker}' com os parâmetros fornecidos.")
         
-        print(f"Download concluído! {len(data)} registros baixados.")
+        logger.info(f"Download concluído! {len(data)} registros baixados.")
         return data
 
     def download_and_save_history(
@@ -183,18 +186,18 @@ class StockDataLoader:
             return str(file_path)
         except ValueError as ve:
             # Relança o erro de valor para que o chamador possa tratá-lo
-            print(f"Erro de validação: {ve}")
+            logger.error(f"Erro de validação: {ve}")
             raise
         except Exception as e:
             # Captura outras exceções (ex: rede, erros internos do yfinance)
             error_message = f"Ocorreu um erro inesperado ao baixar dados para '{ticker}': {e}"
-            print(error_message)
+            logger.error(error_message)
             raise Exception(error_message) from e
 
 
 
 if __name__ == "__main__":
-
+    logging.basicConfig(level=logging.INFO)
     custom_base_path = r"D:\arquivos_antigos\Projetos\Alura\DeepLearning_pytorch\stock_price_prediction"
     
     loader = StockDataLoader(raw_path=f"{custom_base_path}/data/raw", processed_path=f"{custom_base_path}/data/processed")
@@ -203,19 +206,19 @@ if __name__ == "__main__":
     try:
         loader.download_and_save_history(ticker="NVDA", period="1y")
     except Exception as e:
-        print(f"Não foi possível baixar os dados da NVDA: {e}")
+        logger.error(f"Não foi possível baixar os dados da NVDA: {e}")
 
-    print("\n" + "="*50 + "\n")
+    logger.info("="*50)
 
     # 2: Carregar os dados brutos que acabamos de salvar
     try:
         df_nvda = loader.load_raw(ticker="NVDA")
-        print("\nÚltimos 5 registros da NVIDIA:")
-        print(df_nvda.tail())
+        logger.info("Últimos 5 registros da NVIDIA:")
+        logger.info(df_nvda.tail())
     except Exception as e:
-        print(f"Não foi possível carregar os dados da NVDA: {e}")
+        logger.error(f"Não foi possível carregar os dados da NVDA: {e}")
 
-    print("\n" + "="*50 + "\n")
+    logger.info("="*50)
 
     # 3: Salvar um DataFrame processado
     try:
@@ -228,7 +231,7 @@ if __name__ == "__main__":
 
         # Carrega o dado processado para verificar
         df_check = loader.load_processed("NVDA")
-        print("\nÚltimos 5 registros do DataFrame PROCESSADO da NVIDIA:")
-        print(df_check.tail())
+        logger.info("Últimos 5 registros do DataFrame PROCESSADO da NVIDIA:")
+        logger.info(df_check.tail())
     except ValueError as e:
-        print(f"Erro capturado como esperado: {e}")
+        logger.error(f"Erro capturado como esperado: {e}")

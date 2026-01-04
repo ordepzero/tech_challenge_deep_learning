@@ -13,38 +13,49 @@ from src.services.data_loader import StockDataLoader
 from src.services.timeseries_data_module import TimeSeriesDataModule
 from src.models.factory import ModelFactory
 from src.registry.task_registry import TaskRegistry
-
-
 import logging
+
+# Configuração base do logger
 logger = logging.getLogger("train_job")
-logger.setLevel(logging.INFO)
+
+def configure_logging(level_name: str):
+    level = getattr(logging, level_name.upper(), logging.INFO)
+    logging.basicConfig(level=level)
+    logger.setLevel(level)
+    # Ajusta loggers do Ray e Lightning se necessário
+    logging.getLogger("ray").setLevel(level)
+    logging.getLogger("lightning").setLevel(level)
 
 @ray.remote
 def train_job(config: TrainRequest, task_id: str, registry: TaskRegistry):
     try:
-        # model = ModelFactory.create(config)
-        # roda o treino normalmente
+        configure_logging(config.log_level)
+        logger.info(f"Starting task {task_id} with log level {config.log_level}")
+        
         run_train(config)
+        
         ray.get(registry.set.remote(task_id, "completed"))
+        logger.info(f"Task {task_id} completed successfully.")
     except Exception as e:
+        logger.error(f"Task {task_id} failed: {e}", exc_info=True)
         ray.get(registry.set.remote(task_id, f"failed: {e}"))
 
 
-@ray.remote(num_gpus=1)
 def run_train(config: TrainRequest):
-    logger.info("Dentro da task, GPUs detectadas: %s", torch.cuda.device_count())
+    logger.info("Inside training function, detected GPUs on node: %s", torch.cuda.device_count())
 
     base_path = "."
     loader = StockDataLoader(raw_path=f"{base_path}/data/raw",
                              processed_path=f"{base_path}/data/processed")
 
+    # TODO: Parametrizar ticker se necessário, por enquanto hardcoded como no original
     filename_path = loader.get_latest_file_path("NVDA", kind="raw")
-    print(f"Utilizando arquivo: {filename_path}")
+    logger.info(f"Using file: {filename_path}")
 
     data_module = TimeSeriesDataModule(
         csv_path=filename_path,
         value_col="Close",
-        window_size=60,
+        window_size=config.window_size,
         batch_size=32
     )
     data_module.setup()
@@ -61,38 +72,45 @@ def run_train(config: TrainRequest):
     early_stop_callback = EarlyStopping(
         monitor='val_loss',
         patience=10,
-        verbose=True,
+        verbose=(config.log_level == "DEBUG"),
         mode='min'
     )
 
     # --- Escolha automática da estratégia ---
     num_gpus = torch.cuda.device_count()
-    print(f"GPUs detectadas: {num_gpus}")
-    return True
+    logger.info(f"GPUs available for strategy: {num_gpus}")
+    
+    # REMOVED: return True (Bug fix)
 
     if num_gpus > 1:
-        print("Usando RayDDPStrategy para treino distribuído...")
+        logger.info("Using RayDDPStrategy for distributed training...")
         trainer = Trainer(
             max_epochs=200,
             accelerator="gpu",
             devices=num_gpus,
             strategy=RayDDPStrategy(),
-            callbacks=[checkpoint_callback, early_stop_callback]
+            callbacks=[checkpoint_callback, early_stop_callback],
+            enable_progress_bar=(config.log_level == "DEBUG")
         )
         trainer = ray.train.lightning.prepare_trainer(trainer)
     else:
-        print("Usando treino local (CPU ou 1 GPU)...")
+        logger.info("Using local training (CPU or 1 GPU)...")
+        # Se tiver 1 GPU, usa. Se 0, usa CPU (auto)
+        devices = 1 if num_gpus > 0 else "auto"
+        accelerator = "gpu" if num_gpus > 0 else "cpu"
+        
         trainer = Trainer(
             max_epochs=200,
-            accelerator="auto",
-            devices=1,
-            callbacks=[checkpoint_callback, early_stop_callback]
+            accelerator=accelerator,
+            devices=devices,
+            callbacks=[checkpoint_callback, early_stop_callback],
+            enable_progress_bar=(config.log_level == "DEBUG")
         )
 
     # --- Treinamento ---
-    print("\nIniciando treinamento...")
+    logger.info("Starting training loop...")
     trainer.fit(model, datamodule=data_module)
 
-    print("\nIniciando Teste com o melhor modelo...")   
+    logger.info("Starting testing with best model...")   
     trainer.test(model, datamodule=data_module)
-    print("\nTreinamento finalizado com sucesso!")
+    logger.info("Training finished successfully!")

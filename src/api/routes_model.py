@@ -9,7 +9,15 @@ logger = logging.getLogger("uvicorn")
 
 
 router = APIRouter(prefix="/models", tags=["models"])
-registry = TaskRegistry.remote()
+registry = None # Will be initialized on startup
+
+
+
+def get_registry():
+    global registry
+    if registry is None:
+        registry = TaskRegistry.remote()
+    return registry
 
 
 # Lista de modelos simulada
@@ -42,8 +50,9 @@ def train_new_models(request: TrainRequest):
     model_id = f"{request.model_type}_1"
     task_id = f"train_{model_id}"
 
-    registry.set.remote(task_id, "running")
-    train_job.remote(request, task_id, registry)
+    reg = get_registry()
+    reg.set.remote(task_id, "running")
+    train_job.remote(request, task_id, reg)
 
     return APIResponse(
         status="success",
@@ -53,10 +62,12 @@ def train_new_models(request: TrainRequest):
 
 @router.get("/status/{task_id}")
 def get_status(task_id: str):
-    state = ray.get(registry.get.remote(task_id))
+    reg = get_registry()
+    state = ray.get(reg.get.remote(task_id))
     return APIResponse(status="success", message="Status da tarefa", data={"task_id": task_id, "state": state})
 
 @router.get("/list_tasks")
 def list_tasks():
-    tasks = ray.get(registry.list.remote())
+    reg = get_registry()
+    tasks = ray.get(reg.list.remote())
     return APIResponse(status="success", message="Lista de tarefas", data=tasks)

@@ -4,9 +4,10 @@ __pycache__/
 **/__pycache__/
 
 # Ignorar arquivos compilados do Python
-*.pyc
 *.pyo
 *.pyd
+*.pdb
+*.pyc
 
 # Ignorar arquivos de ambiente virtual
 .env
@@ -32,6 +33,9 @@ Thumbs.db
 .vscode/
 .idea/
 
-
 supervisord.log
 supervisord.pid
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
