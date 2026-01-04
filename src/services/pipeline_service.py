@@ -26,7 +26,7 @@ def configure_logging(level_name: str):
     logging.getLogger("ray").setLevel(level)
     logging.getLogger("lightning").setLevel(level)
 
-@ray.remote
+@ray.remote(num_gpus=1)
 def train_job(config: TrainRequest, task_id: str, registry: TaskRegistry):
     try:
         configure_logging(config.log_level)

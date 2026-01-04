@@ -25,6 +25,9 @@ checkpoints/
 data/processed/
 data/raw/
 
+
+lightning_logs/
+
 # Ignorar arquivos do sistema
 .DS_Store
 Thumbs.db
