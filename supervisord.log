@@ -1,0 +1,233 @@
+2026-01-03 11:19:30,716 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2026-01-03 11:19:30,719 INFO supervisord started with pid 1
+2026-01-03 11:19:31,721 INFO spawned: 'fastapi' with pid 7
+2026-01-03 11:19:31,723 INFO spawned: 'ray' with pid 8
+2026-01-03 11:19:32,724 INFO success: fastapi entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-01-03 11:19:32,725 INFO success: ray entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-01-03 11:19:32,913 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987797265776 for <Subprocess at 130987813616240 with name fastapi in state RUNNING> (stderr)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:32,914 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987797265776 for <Subprocess at 130987813616240 with name fastapi in state RUNNING> (stderr)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:32,915 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987797265776 for <Subprocess at 130987813616240 with name fastapi in state RUNNING> (stderr)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:35,518 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987793704208 for <Subprocess at 130987793703008 with name ray in state RUNNING> (stdout)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:36,690 INFO exited: ray (exit status 0; expected)
+2026-01-03 11:19:37,693 INFO spawned: 'ray' with pid 971
+2026-01-03 11:19:38,312 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987796922736 for <Subprocess at 130987793703008 with name ray in state STARTING> (stdout)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:38,312 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987793710256 for <Subprocess at 130987793703008 with name ray in state STARTING> (stderr)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:38,314 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987793710256 for <Subprocess at 130987793703008 with name ray in state STARTING> (stderr)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:38,315 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987793710256 for <Subprocess at 130987793703008 with name ray in state STARTING> (stderr)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:38,315 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987793710256 for <Subprocess at 130987793703008 with name ray in state STARTING> (stderr)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:38,315 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987793710256 for <Subprocess at 130987793703008 with name ray in state STARTING> (stderr)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:38,316 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987793710256 for <Subprocess at 130987793703008 with name ray in state STARTING> (stderr)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:38,316 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987793710256 for <Subprocess at 130987793703008 with name ray in state STARTING> (stderr)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:38,316 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987793710256 for <Subprocess at 130987793703008 with name ray in state STARTING> (stderr)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:38,433 WARN exited: ray (exit status 1; not expected)
+2026-01-03 11:19:39,436 INFO spawned: 'ray' with pid 1030
+2026-01-03 11:19:40,048 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987799289088 for <Subprocess at 130987793703008 with name ray in state STARTING> (stdout)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:40,048 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987793698832 for <Subprocess at 130987793703008 with name ray in state STARTING> (stderr)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:40,049 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987793698832 for <Subprocess at 130987793703008 with name ray in state STARTING> (stderr)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:40,175 WARN exited: ray (exit status 1; not expected)
+2026-01-03 11:19:42,178 INFO spawned: 'ray' with pid 1071
+2026-01-03 11:19:42,796 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987796922736 for <Subprocess at 130987793703008 with name ray in state STARTING> (stdout)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:42,797 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987793710352 for <Subprocess at 130987793703008 with name ray in state STARTING> (stderr)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:42,797 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987793710352 for <Subprocess at 130987793703008 with name ray in state STARTING> (stderr)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:42,912 WARN exited: ray (exit status 1; not expected)
+2026-01-03 11:19:45,917 INFO spawned: 'ray' with pid 1110
+2026-01-03 11:19:46,565 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987796922736 for <Subprocess at 130987793703008 with name ray in state STARTING> (stdout)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:46,566 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987793704208 for <Subprocess at 130987793703008 with name ray in state STARTING> (stderr)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:46,566 CRIT uncaptured python exception, closing channel <POutputDispatcher at 130987793704208 for <Subprocess at 130987793703008 with name ray in state STARTING> (stderr)> (<class 'OSError'>:[Errno 29] Illegal seek [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/supervisord.py|runforever|218] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|handle_read_event|276] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|record_output|210] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/dispatchers.py|_log|179] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|info|327] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|log|345] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|emit|227] [/home/ray/anaconda3/lib/python3.12/site-packages/supervisor/loggers.py|doRollover|264])
+2026-01-03 11:19:46,677 WARN exited: ray (exit status 1; not expected)
+2026-01-03 11:19:47,678 INFO gave up: ray entered FATAL state, too many start retries too quickly
+2026-01-03 11:24:00,937 WARN received SIGTERM indicating exit request
+2026-01-03 11:24:00,938 INFO waiting for fastapi to die
+2026-01-03 11:56:52,732 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2026-01-03 11:56:52,738 INFO supervisord started with pid 1
+2026-01-03 11:56:53,740 INFO spawned: 'fastapi' with pid 7
+2026-01-03 11:56:53,742 INFO spawned: 'ray' with pid 8
+2026-01-03 11:56:54,743 INFO success: fastapi entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-01-03 11:56:54,744 INFO success: ray entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-01-03 11:56:58,664 INFO exited: ray (exit status 0; expected)
+2026-01-03 11:56:59,666 INFO spawned: 'ray' with pid 971
+2026-01-03 11:57:00,404 WARN exited: ray (exit status 1; not expected)
+2026-01-03 11:57:01,406 INFO spawned: 'ray' with pid 1030
+2026-01-03 11:57:02,118 WARN exited: ray (exit status 1; not expected)
+2026-01-03 11:57:04,122 INFO spawned: 'ray' with pid 1071
+2026-01-03 11:57:04,865 WARN exited: ray (exit status 1; not expected)
+2026-01-03 11:57:07,870 INFO spawned: 'ray' with pid 1110
+2026-01-03 11:57:08,605 WARN exited: ray (exit status 1; not expected)
+2026-01-03 11:57:09,606 INFO gave up: ray entered FATAL state, too many start retries too quickly
+2026-01-03 12:30:20,481 WARN received SIGINT indicating exit request
+2026-01-03 12:30:20,482 INFO waiting for fastapi to die
+2026-01-03 12:30:21,777 INFO stopped: fastapi (exit status 0)
+2026-01-03 14:17:07,310 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2026-01-03 14:17:07,314 INFO supervisord started with pid 1
+2026-01-03 14:17:08,317 INFO spawned: 'fastapi' with pid 8
+2026-01-03 14:17:09,319 INFO success: fastapi entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-01-03 14:19:53,769 WARN received SIGINT indicating exit request
+2026-01-03 14:19:53,770 INFO waiting for fastapi to die
+2026-01-03 14:19:53,989 INFO stopped: fastapi (exit status 0)
+2026-01-03 14:20:49,221 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2026-01-03 14:20:49,224 INFO supervisord started with pid 1
+2026-01-03 14:20:50,225 INFO spawned: 'fastapi' with pid 7
+2026-01-03 14:20:52,024 INFO success: fastapi entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-01-03 14:27:56,322 WARN received SIGINT indicating exit request
+2026-01-03 14:27:56,323 INFO waiting for fastapi to die
+2026-01-03 14:27:56,602 INFO stopped: fastapi (exit status 0)
+2026-01-04 04:42:32,076 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2026-01-04 04:42:32,080 INFO supervisord started with pid 1
+2026-01-04 04:42:33,083 INFO spawned: 'fastapi' with pid 7
+2026-01-04 04:42:34,085 INFO success: fastapi entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-01-04 06:28:20,312 WARN received SIGINT indicating exit request
+2026-01-04 06:28:20,312 INFO waiting for fastapi to die
+2026-01-04 06:28:20,586 INFO stopped: fastapi (exit status 0)
+2026-01-04 06:28:59,629 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2026-01-04 06:28:59,631 INFO supervisord started with pid 1
+2026-01-04 06:29:00,633 INFO spawned: 'fastapi' with pid 7
+2026-01-04 06:29:01,109 WARN exited: fastapi (exit status 1; not expected)
+2026-01-04 06:29:02,111 INFO spawned: 'fastapi' with pid 8
+2026-01-04 06:29:02,396 WARN exited: fastapi (exit status 1; not expected)
+2026-01-04 06:29:04,400 INFO spawned: 'fastapi' with pid 9
+2026-01-04 06:29:04,657 WARN exited: fastapi (exit status 1; not expected)
+2026-01-04 06:29:07,662 INFO spawned: 'fastapi' with pid 10
+2026-01-04 06:29:07,950 WARN exited: fastapi (exit status 1; not expected)
+2026-01-04 06:29:08,951 INFO gave up: fastapi entered FATAL state, too many start retries too quickly
+2026-01-04 06:29:55,003 WARN received SIGINT indicating exit request
+2026-01-04 06:33:11,229 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2026-01-04 06:33:11,231 INFO supervisord started with pid 1
+2026-01-04 06:33:12,233 INFO spawned: 'fastapi' with pid 7
+2026-01-04 06:33:13,235 INFO success: fastapi entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-01-04 07:23:25,520 WARN received SIGTERM indicating exit request
+2026-01-04 07:23:25,521 INFO waiting for fastapi to die
+2026-01-04 07:23:25,775 INFO stopped: fastapi (exit status 0)
+2026-01-04 07:24:39,007 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2026-01-04 07:24:39,010 INFO supervisord started with pid 1
+2026-01-04 07:24:40,013 INFO spawned: 'fastapi' with pid 7
+2026-01-04 07:24:41,015 INFO success: fastapi entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-01-04 07:29:33,814 WARN received SIGINT indicating exit request
+2026-01-04 07:29:33,814 INFO waiting for fastapi to die
+2026-01-04 07:29:36,245 INFO stopped: fastapi (exit status 0)
+2026-01-04 07:30:04,234 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2026-01-04 07:30:04,237 INFO supervisord started with pid 1
+2026-01-04 07:30:05,239 INFO spawned: 'fastapi' with pid 7
+2026-01-04 07:30:06,241 INFO success: fastapi entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-01-04 07:38:40,876 WARN received SIGTERM indicating exit request
+2026-01-04 07:38:40,877 INFO waiting for fastapi to die
+2026-01-04 07:39:01,881 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2026-01-04 07:39:01,884 INFO supervisord started with pid 1
+2026-01-04 07:39:02,886 INFO spawned: 'fastapi' with pid 7
+2026-01-04 07:39:03,888 INFO success: fastapi entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-01-04 07:39:47,250 WARN received SIGINT indicating exit request
+2026-01-04 07:39:47,251 INFO waiting for fastapi to die
+2026-01-04 07:39:49,165 INFO stopped: fastapi (exit status 0)
+2026-01-04 08:11:16,994 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2026-01-04 08:11:16,997 INFO supervisord started with pid 1
+2026-01-04 08:11:18,000 INFO spawned: 'fastapi' with pid 7
+2026-01-04 08:11:19,097 INFO success: fastapi entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-01-04 09:15:27,856 INFO reaped unknown pid 16145 (exit status 0)
+2026-01-04 09:15:27,856 INFO reaped unknown pid 16146 (exit status 0)
+2026-01-04 09:15:27,856 INFO reaped unknown pid 16153 (exit status 0)
+2026-01-04 09:15:27,857 INFO reaped unknown pid 16154 (exit status 0)
+2026-01-04 09:15:41,568 INFO reaped unknown pid 16235 (exit status 0)
+2026-01-04 09:15:41,568 INFO reaped unknown pid 16236 (exit status 0)
+2026-01-04 09:15:41,569 INFO reaped unknown pid 16243 (exit status 0)
+2026-01-04 09:15:41,569 INFO reaped unknown pid 16244 (exit status 0)
+2026-01-04 09:15:55,486 INFO reaped unknown pid 16295 (exit status 0)
+2026-01-04 09:15:55,486 INFO reaped unknown pid 16296 (exit status 0)
+2026-01-04 09:15:55,486 INFO reaped unknown pid 16303 (exit status 0)
+2026-01-04 09:15:55,487 INFO reaped unknown pid 16304 (exit status 0)
+2026-01-04 09:16:09,430 INFO reaped unknown pid 16378 (exit status 0)
+2026-01-04 09:16:09,430 INFO reaped unknown pid 16379 (exit status 0)
+2026-01-04 09:16:09,431 INFO reaped unknown pid 16386 (exit status 0)
+2026-01-04 09:16:09,431 INFO reaped unknown pid 16387 (exit status 0)
+2026-01-04 09:17:15,501 WARN received SIGINT indicating exit request
+2026-01-04 09:17:15,503 INFO waiting for fastapi to die
+2026-01-04 09:17:17,618 INFO stopped: fastapi (exit status 0)
+2026-01-04 09:17:17,619 INFO reaped unknown pid 8 (exit status 0)
+2026-01-04 09:17:33,500 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2026-01-04 09:17:33,506 INFO supervisord started with pid 1
+2026-01-04 09:17:34,509 INFO spawned: 'fastapi' with pid 7
+2026-01-04 09:17:35,608 INFO success: fastapi entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-01-04 09:18:12,936 INFO reaped unknown pid 2777 (exit status 0)
+2026-01-04 09:18:12,936 INFO reaped unknown pid 2778 (exit status 0)
+2026-01-04 09:18:12,936 INFO reaped unknown pid 2785 (exit status 0)
+2026-01-04 09:18:12,937 INFO reaped unknown pid 2786 (exit status 0)
+2026-01-04 09:18:26,248 INFO reaped unknown pid 2931 (exit status 0)
+2026-01-04 09:18:26,248 INFO reaped unknown pid 2932 (exit status 0)
+2026-01-04 09:18:26,248 INFO reaped unknown pid 2939 (exit status 0)
+2026-01-04 09:18:26,249 INFO reaped unknown pid 2940 (exit status 0)
+2026-01-04 09:18:40,165 INFO reaped unknown pid 3022 (exit status 0)
+2026-01-04 09:18:40,165 INFO reaped unknown pid 3023 (exit status 0)
+2026-01-04 09:18:40,165 INFO reaped unknown pid 3030 (exit status 0)
+2026-01-04 09:18:40,166 INFO reaped unknown pid 3031 (exit status 0)
+2026-01-04 09:18:55,887 INFO reaped unknown pid 3079 (exit status 0)
+2026-01-04 09:18:55,887 INFO reaped unknown pid 3080 (exit status 0)
+2026-01-04 09:18:55,887 INFO reaped unknown pid 3087 (exit status 0)
+2026-01-04 09:18:55,887 INFO reaped unknown pid 3088 (exit status 0)
+2026-01-04 09:23:37,328 WARN received SIGINT indicating exit request
+2026-01-04 09:23:37,328 INFO waiting for fastapi to die
+2026-01-04 09:23:38,464 INFO reaped unknown pid 242 (exit status 0)
+2026-01-04 09:23:38,465 INFO reaped unknown pid 243 (exit status 0)
+2026-01-04 09:23:38,465 INFO reaped unknown pid 244 (exit status 0)
+2026-01-04 09:23:38,465 INFO reaped unknown pid 245 (exit status 0)
+2026-01-04 09:23:38,466 INFO reaped unknown pid 246 (exit status 0)
+2026-01-04 09:23:38,466 INFO reaped unknown pid 247 (exit status 0)
+2026-01-04 09:23:38,466 INFO reaped unknown pid 248 (exit status 0)
+2026-01-04 09:23:38,466 INFO reaped unknown pid 249 (exit status 0)
+2026-01-04 09:23:38,467 INFO reaped unknown pid 250 (exit status 0)
+2026-01-04 09:23:38,467 INFO reaped unknown pid 251 (exit status 0)
+2026-01-04 09:23:40,471 INFO waiting for fastapi to die
+2026-01-04 09:23:43,474 INFO waiting for fastapi to die
+2026-01-04 09:23:46,476 INFO waiting for fastapi to die
+2026-01-04 09:23:47,478 WARN killing 'fastapi' (7) with SIGKILL
+2026-01-04 09:23:48,480 WARN stopped: fastapi (terminated by SIGKILL)
+2026-01-04 09:24:13,246 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2026-01-04 09:24:13,249 INFO supervisord started with pid 1
+2026-01-04 09:24:14,252 INFO spawned: 'fastapi' with pid 7
+2026-01-04 09:24:15,312 INFO success: fastapi entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-01-04 09:25:30,626 INFO reaped unknown pid 3121 (exit status 0)
+2026-01-04 09:25:30,626 INFO reaped unknown pid 3122 (exit status 0)
+2026-01-04 09:25:30,626 INFO reaped unknown pid 3129 (exit status 0)
+2026-01-04 09:25:30,627 INFO reaped unknown pid 3130 (exit status 0)
+2026-01-04 09:25:46,863 INFO reaped unknown pid 3216 (exit status 0)
+2026-01-04 09:25:46,863 INFO reaped unknown pid 3217 (exit status 0)
+2026-01-04 09:25:46,864 INFO reaped unknown pid 3225 (exit status 0)
+2026-01-04 09:25:46,864 INFO reaped unknown pid 3226 (exit status 0)
+2026-01-04 09:26:00,881 INFO reaped unknown pid 3280 (exit status 0)
+2026-01-04 09:26:00,881 INFO reaped unknown pid 3281 (exit status 0)
+2026-01-04 09:26:00,881 INFO reaped unknown pid 3292 (exit status 0)
+2026-01-04 09:26:00,881 INFO reaped unknown pid 3293 (exit status 0)
+2026-01-04 09:26:14,741 INFO reaped unknown pid 3368 (exit status 0)
+2026-01-04 09:26:14,741 INFO reaped unknown pid 3369 (exit status 0)
+2026-01-04 09:26:14,741 INFO reaped unknown pid 3377 (exit status 0)
+2026-01-04 09:26:14,742 INFO reaped unknown pid 3378 (exit status 0)
+2026-01-04 09:30:08,935 WARN received SIGINT indicating exit request
+2026-01-04 09:30:08,935 INFO waiting for fastapi to die
+2026-01-04 09:30:10,971 INFO stopped: fastapi (exit status 0)
+2026-01-04 09:30:10,971 INFO reaped unknown pid 8 (exit status 0)
+2026-01-04 09:30:48,190 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2026-01-04 09:30:48,193 INFO supervisord started with pid 1
+2026-01-04 09:30:49,196 INFO spawned: 'fastapi' with pid 7
+2026-01-04 09:30:50,280 INFO success: fastapi entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-01-04 10:11:31,503 WARN received SIGINT indicating exit request
+2026-01-04 10:11:31,503 INFO waiting for fastapi to die
+2026-01-04 10:11:33,037 INFO stopped: fastapi (exit status 0)
+2026-01-04 10:11:33,037 INFO reaped unknown pid 8 (exit status 0)
+2026-01-04 10:12:15,777 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2026-01-04 10:12:15,780 INFO supervisord started with pid 1
+2026-01-04 10:12:16,783 INFO spawned: 'fastapi' with pid 7
+2026-01-04 10:12:17,889 INFO success: fastapi entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-01-04 10:22:42,343 WARN received SIGINT indicating exit request
+2026-01-04 10:22:42,344 INFO waiting for fastapi to die
+2026-01-04 10:22:43,525 INFO reaped unknown pid 929 (terminated by SIGKILL)
+2026-01-04 10:22:45,528 INFO reaped unknown pid 241 (exit status 0)
+2026-01-04 10:22:45,529 INFO reaped unknown pid 242 (exit status 0)
+2026-01-04 10:22:45,529 INFO reaped unknown pid 243 (exit status 0)
+2026-01-04 10:22:45,529 INFO reaped unknown pid 244 (exit status 0)
+2026-01-04 10:22:45,530 INFO reaped unknown pid 245 (exit status 0)
+2026-01-04 10:22:45,530 INFO reaped unknown pid 246 (exit status 0)
+2026-01-04 10:22:45,530 INFO reaped unknown pid 247 (exit status 0)
+2026-01-04 10:22:45,531 INFO reaped unknown pid 248 (exit status 0)
+2026-01-04 10:22:45,531 INFO reaped unknown pid 249 (exit status 0)
+2026-01-04 10:22:45,531 INFO reaped unknown pid 250 (exit status 0)
+2026-01-04 10:22:45,531 INFO waiting for fastapi to die
+2026-01-04 10:22:45,650 INFO reaped unknown pid 176 (terminated by SIGKILL)
+2026-01-04 10:22:45,672 INFO stopped: fastapi (exit status 0)
+2026-01-04 10:22:45,673 INFO reaped unknown pid 8 (exit status 0)

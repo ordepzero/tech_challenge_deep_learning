@@ -1,0 +1,7 @@
+yfinance
+pytest
+pandas
+numpy
+lightning
+ray[tune]
+ray[train]

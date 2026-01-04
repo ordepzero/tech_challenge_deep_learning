@@ -1,0 +1,11 @@
+# torch/vision/audio removed to prevent overwriting Nightly build
+lightning>=2.2.0
+numpy
+pandas
+matplotlib
+psutil
+uvicorn[standard]
+yfinance
+tensorboard
+transformers
+fastapi[standard]

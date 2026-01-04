@@ -1,0 +1,33 @@
+# Ignorar caches do Python
+__pycache__/
+*/__pycache__/
+**/__pycache__/
+
+# Ignorar arquivos compilados do Python
+*.pyc
+*.pyo
+*.pyd
+
+# Ignorar arquivos de ambiente virtual
+.env
+.venv/
+env/
+venv/
+
+# Ignorar arquivos de configuração locais
+*.log
+*.sqlite3
+*.db
+
+# Ignorar checkpoints e dados temporários
+checkpoints/
+data/processed/
+data/raw/
+
+# Ignorar arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Ignorar arquivos de IDE
+.vscode/
+.idea/

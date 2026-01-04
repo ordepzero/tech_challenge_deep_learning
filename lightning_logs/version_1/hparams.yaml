@@ -1,0 +1,7 @@
+dropout_prob: 0.2
+hidden_dim: 1
+input_dim: 1
+learning_rate: 0.2
+num_layers: 1
+output_dim: 1
+window_size: 5
