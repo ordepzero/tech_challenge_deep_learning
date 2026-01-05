@@ -106,5 +106,8 @@ docker exec -it <CONTAINER_ID> python meu_modulo.py
 docker exec -it <CONTAINER_ID> bash
 docker exec -it e8a5c8312a3e bash
 
-docker start -ai 7f5ff63d71b484c5a9043389056843ebf60d91c52b7ecd67cf0ae721ece003d9
-docker exec -it 958283c0aed05418556cdc968337fc04ab95566b69595d35793a5c0edc4bdfb5 bash   
+docker start -ai 3278933ae3e4a263dd003cd5e49d79a68d98de0b7edde2d3cb2f6f0e39e853b7
+docker exec -it c3e63bf58ea9a57b37c4e134bb2c3dfd2588bfa6a80a6b9c57722548a1c352cc bash   
+
+docker logs --tail 100 <nome-ou-id-do-container>
+docker logs -f <nome-ou-id-do-container>

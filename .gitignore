@@ -27,6 +27,7 @@ data/raw/
 
 
 lightning_logs/
+mlruns/
 
 # Ignorar arquivos do sistema
 .DS_Store

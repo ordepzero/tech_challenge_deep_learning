@@ -9,3 +9,4 @@ yfinance
 tensorboard
 transformers
 fastapi[standard]
+mlflow
