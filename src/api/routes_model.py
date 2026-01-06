@@ -37,6 +37,18 @@ def list_models():
     runs = manager.list_runs()
     return APIResponse(status="success", message="Modelos listados do MLflow", data=runs)
 
+@router.get("/list_tasks")
+def list_tasks():
+    reg = get_registry()
+    tasks = ray.get(reg.list.remote())
+    return APIResponse(status="success", message="Lista de tarefas", data=tasks)
+
+@router.get("/status/{task_id}")
+def get_status(task_id: str):
+    reg = get_registry()
+    state = ray.get(reg.get.remote(task_id))
+    return APIResponse(status="success", message="Status da tarefa", data=state)
+
 @router.get("/{run_id}")
 def get_model(run_id: str):
     """Get details of a specific model/run."""
@@ -79,10 +91,11 @@ def tune_models(request: TrainRequest, background_tasks: BackgroundTasks):
 
     def tuning_wrapper(req, t_id, registry_actor):
         try:
-            tune_model(req)
-            ray.get(registry_actor.set.remote(t_id, "completed"))
+            result = tune_model(req)
+            # result is now a dict with {"config": ..., "run_id": ...}
+            ray.get(registry_actor.set.remote(t_id, {"status": "completed", "run_id": result.get("run_id")}))
         except Exception as e:
-            logger.error(f"Tuning failed: {e}")
+            logger.error(f"Tuning failed: {e}", exc_info=True)
             ray.get(registry_actor.set.remote(t_id, f"failed: {e}"))
 
     # Running tuning in background to avoid blocking API
@@ -132,7 +145,7 @@ def prune_model_endpoint(run_id: str, amount: float = 0.2):
     service = OptimizationService()
     try:
         result = service.prune_model(run_id, amount)
-        return APIResponse(status="success", message=result)
+        return APIResponse(status="success", message="Pruning completed", data=result)
     except Exception as e:
          raise HTTPException(status_code=500, detail=f"Erro ao aplicar pruning: {e}")
 
@@ -146,14 +159,3 @@ def specialize_model_endpoint(run_id: str, request: TrainRequest):
     
     service.specialize_model(run_id, request, task_id, reg)
     return APIResponse(status="success", message="Especialização iniciada", data={"task_id": task_id})
-
-@router.get("/status/{task_id}")
-def get_status(task_id: str):
-    reg = get_registry()
-    state = ray.get(reg.get.remote(task_id))
-    return APIResponse(status="success", message="Status da tarefa", data=state)
-@router.get("/list_tasks")
-def list_tasks():
-    reg = get_registry()
-    tasks = ray.get(reg.list.remote())
-    return APIResponse(status="success", message="Lista de tarefas", data=tasks)

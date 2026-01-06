@@ -31,13 +31,15 @@ class OptimizationService:
                 prune.remove(module, 'weight') # Make pruning permanent
         
         # 3. Log pruned model to MLflow
-        with mlflow.start_run(run_name=f"pruned_{run_id}"):
+        new_run_id = None
+        with mlflow.start_run(run_name=f"pruned_{run_id}") as run:
+            new_run_id = run.info.run_id
             mlflow.log_param("original_run_id", run_id)
             mlflow.log_param("pruning_amount", amount)
             mlflow.pytorch.log_model(model, "model")
             
-        logger.info("Pruning completed and model saved.")
-        return "Pruning completed"
+        logger.info(f"Pruning completed. New run_id: {new_run_id}")
+        return {"status": "Pruning completed", "new_run_id": new_run_id}
 
     def specialize_model(self, original_run_id: str, train_request: TrainRequest, task_id: str, registry):
         """

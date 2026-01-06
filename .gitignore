@@ -28,6 +28,7 @@ data/raw/
 
 lightning_logs/
 mlruns/
+ray_results/
 
 # Ignorar arquivos do sistema
 .DS_Store
@@ -43,3 +44,4 @@ supervisord.pid
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+supervisord.log
