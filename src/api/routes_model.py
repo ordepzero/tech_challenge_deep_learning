@@ -118,25 +118,54 @@ def load_model(run_id: str):
 
 @router.post("/predict")
 def predict(request: PredictionRequest):
-    """Make a prediction using a loaded model."""
+    """Make a prediction using a loaded model with automatic normalization."""
     run_id = request.model_run_id
     logger.info(f"Predict request for {run_id}. Available models: {list(LOADED_MODELS.keys())}")
     
     if run_id not in LOADED_MODELS:
-        raise HTTPException(status_code=400, detail=f"Modelo não carregado. Chame /load primeiro. Disponíveis: {list(LOADED_MODELS.keys())}")
+        raise HTTPException(status_code=400, detail=f"Modelo não carregado. ID solicitado: '{run_id}'. Disponíveis: {list(LOADED_MODELS.keys())}")
     
+    if not request.data:
+        raise HTTPException(status_code=400, detail="Dados de entrada vazios.")
+
     model = LOADED_MODELS[run_id]
-    input_tensor = torch.tensor([request.data]) # Add batch dim
     
-    # Check dimensions (simplified)
-    # Assumes input is [seq_len, features] or similar depending on model
+    # 1. Normalização Automática (baseada no histórico fornecido)
+    # De acordo com TimeSeriesDataset: base_value = x[-1]
+    base_value = request.data[-1]
+    if base_value == 0:
+        base_value = 1e-8
+        
+    # Normaliza a janela: (valor / base) - 1
+    data_norm = [(v / base_value) - 1 for v in request.data]
+    
+    input_tensor = torch.tensor([data_norm], dtype=torch.float32) # Add batch dim
     
     try:
+        model.eval()
         with torch.no_grad():
             output = model(input_tensor)
-        return APIResponse(status="success", message="Predição realizada", data=output.tolist())
+        
+        # 2. Denormalização: Preço = (Norm + 1) * Base
+        predicted_return = output.item() if output.numel() == 1 else output.tolist()
+        
+        if isinstance(predicted_return, (float, int)):
+            predicted_price = (predicted_return + 1) * base_value
+        else:
+            # Caso seja multi-output (raro aqui, mas para segurança)
+            predicted_price = [(r + 1) * base_value for r in predicted_return]
+
+        return APIResponse(
+            status="success", 
+            message="Predição realizada com normalização automática", 
+            data={
+                "predicted_price": predicted_price,
+                "predicted_return": predicted_return,
+                "base_value_used": base_value
+            }
+        )
     except Exception as e:
-        logger.error(f"Error during prediction: {e}")
+        logger.error(f"Error during prediction: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Erro na predição: {e}")
 
 @router.post("/{run_id}/prune")
