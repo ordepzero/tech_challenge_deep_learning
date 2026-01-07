@@ -3,7 +3,8 @@ import logging
 import ray
 import torch
 from fastapi import FastAPI
-from src.api import routes_model, routes_data, routes_utils
+from prometheus_fastapi_instrumentator import Instrumentator
+from src.api import routes_model, routes_data
 
 logger = logging.getLogger("uvicorn")
 
@@ -25,6 +26,8 @@ async def lifespan(app: FastAPI):
             ignore_reinit_error=True,
             include_dashboard=True,
             dashboard_host="0.0.0.0",
+            dashboard_port=8265,
+            _metrics_export_port=8080,
             num_gpus=torch.cuda.device_count() if torch.cuda.is_available() else 0
         )
         logger.info("Ray initialized successfully (Local Cluster).")
@@ -41,9 +44,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+# Instrument FastAPI
+Instrumentator().instrument(app).expose(app)
+
 app.include_router(routes_model.router)
 app.include_router(routes_data.router)
-app.include_router(routes_utils.router)
 
 @app.get("/")
 async def root():

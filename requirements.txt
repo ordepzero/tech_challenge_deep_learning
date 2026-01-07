@@ -10,3 +10,4 @@ tensorboard
 transformers
 fastapi[standard]
 mlflow
+prometheus-fastapi-instrumentator

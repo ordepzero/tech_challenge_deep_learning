@@ -12,10 +12,20 @@ import torch
 import logging
 from datetime import datetime
 
+from src.services.data_loader import StockDataLoader
+import os
+
 logger = logging.getLogger("uvicorn")
 
 router = APIRouter(prefix="/models", tags=["models"])
 registry = None # Will be initialized on startup
+
+# Get base path for data (handling both local and container)
+BASE_DATA_PATH = "." # Or /app in container
+LOADER = StockDataLoader(
+    raw_path=f"{BASE_DATA_PATH}/data/raw",
+    processed_path=f"{BASE_DATA_PATH}/data/processed"
+)
 
 # Global cache for loaded models (simple in-memory storage)
 LOADED_MODELS = {}
@@ -118,26 +128,62 @@ def load_model(run_id: str):
 
 @router.post("/predict")
 def predict(request: PredictionRequest):
-    """Make a prediction using a loaded model with automatic normalization."""
+    """Make a prediction with automatic normalization and window completion."""
     run_id = request.model_run_id
-    logger.info(f"Predict request for {run_id}. Available models: {list(LOADED_MODELS.keys())}")
+    logger.info(f"Predict request for {run_id}. Ticker: {request.ticker}")
     
     if run_id not in LOADED_MODELS:
         raise HTTPException(status_code=400, detail=f"Modelo não carregado. ID solicitado: '{run_id}'. Disponíveis: {list(LOADED_MODELS.keys())}")
     
-    if not request.data:
-        raise HTTPException(status_code=400, detail="Dados de entrada vazios.")
-
     model = LOADED_MODELS[run_id]
+    expected_window = getattr(model, "hparams", {}).get("window_size", 60)
     
+    input_data = request.data
+    
+    # 0. Auto-completion of window if partial data provided
+    if len(input_data) < expected_window:
+        if not request.ticker:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Dados insuficientes ({len(input_data)}/{expected_window}). Informe o 'ticker' para completar a janela automaticamente."
+            )
+        
+        try:
+            # Tenta carregar histórico do CSV local
+            df = LOADER.load_raw(request.ticker)
+            # Pega o histórico mais recente (coluna Close)
+            history = df['Close'].tail(expected_window).values.tolist()
+            
+            needed = expected_window - len(input_data)
+            if len(history) < needed:
+                 raise HTTPException(status_code=400, detail=f"Histórico insuficiente no arquivo para o ticker {request.ticker}. Encontrados {len(history)} registros.")
+            
+            # Concatena: [Histórico Antigo] + [Dados do Usuário]
+            # Ex: se faltam 59, pega os 59 do CSV e coloca o valor do usuário no final
+            # Note: Usamos os valores *anteriores* aos fornecidos pelo usuário se possível, 
+            # mas o load_raw pega o fim do arquivo. 
+            # Idealmente, o 'request.data' é o preço MAIS ATUAL (hoje).
+            input_data = history[-needed:] + input_data
+            logger.info(f"Janela completada para {request.ticker}. Novos dados: {len(input_data)} valores.")
+            
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail=f"Arquivo histórico não encontrado para o ticker {request.ticker}. Por favor, realize o download primeiro.")
+        except Exception as e:
+            logger.error(f"Erro ao completar janela: {e}")
+            raise HTTPException(status_code=500, detail=f"Erro ao completar janela historicamente: {e}")
+
+    # Validação final de tamanho
+    if len(input_data) != expected_window:
+         raise HTTPException(status_code=400, detail=f"Tamanho da série final inválido. Esperado {expected_window}, obtido {len(input_data)}.")
+
     # 1. Normalização Automática (baseada no histórico fornecido)
     # De acordo com TimeSeriesDataset: base_value = x[-1]
-    base_value = request.data[-1]
+    base_value = input_data[-1]
     if base_value == 0:
         base_value = 1e-8
         
     # Normaliza a janela: (valor / base) - 1
-    data_norm = [(v / base_value) - 1 for v in request.data]
+    data_norm = [(v / base_value) - 1 for v in input_data]
     
     input_tensor = torch.tensor([data_norm], dtype=torch.float32) # Add batch dim
     
@@ -152,16 +198,16 @@ def predict(request: PredictionRequest):
         if isinstance(predicted_return, (float, int)):
             predicted_price = (predicted_return + 1) * base_value
         else:
-            # Caso seja multi-output (raro aqui, mas para segurança)
             predicted_price = [(r + 1) * base_value for r in predicted_return]
 
         return APIResponse(
             status="success", 
-            message="Predição realizada com normalização automática", 
+            message="Predição realizada com sucesso", 
             data={
                 "predicted_price": predicted_price,
                 "predicted_return": predicted_return,
-                "base_value_used": base_value
+                "base_value_used": base_value,
+                "window_completed": len(request.data) < expected_window
             }
         )
     except Exception as e:
