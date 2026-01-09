@@ -1,4 +1,3 @@
-
 import mlflow
 import torch
 import torch.nn.utils.prune as prune
@@ -9,28 +8,35 @@ from src.registry.task_registry import TaskRegistry
 import ray
 import logging
 
+# Configuração do logger local
 logger = logging.getLogger(__name__)
 
 class OptimizationService:
+    """
+    Serviço responsável por otimizações de modelos, como pruning (poda) e especialização (fine-tuning).
+    """
     def __init__(self):
+        """
+        Inicializa o OptimizationService com uma instância do MLFlowManager.
+        """
         self.mlflow_manager = MLFlowManager()
 
     def prune_model(self, run_id: str, amount: float = 0.2):
         """
-        Apply L1 Unstructured Pruning to the model from the specified run_id.
+        Aplica o pruning L1 não estruturado às camadas lineares do modelo identificado pelo run_id.
         """
-        logger.info(f"Pruning model from run {run_id} with amount {amount}")
+        logger.info(f"Aplicando pruning ao modelo da run {run_id} com quantidade {amount}")
         
-        # 1. Load model
+        # Carrega o modelo do MLflow
         model = self.mlflow_manager.load_model(run_id)
         
-        # 2. Apply pruning to all linear layers (example strategy)
+        # Aplica pruning a todas as camadas lineares (estratégia de exemplo)
         for name, module in model.named_modules():
             if isinstance(module, torch.nn.Linear):
                 prune.l1_unstructured(module, name='weight', amount=amount)
-                prune.remove(module, 'weight') # Make pruning permanent
+                prune.remove(module, 'weight') # Torna o pruning permanente
         
-        # 3. Log pruned model to MLflow
+        # Registra o modelo podado de volta no MLflow como uma nova run
         new_run_id = None
         with mlflow.start_run(run_name=f"pruned_{run_id}") as run:
             new_run_id = run.info.run_id
@@ -38,37 +44,21 @@ class OptimizationService:
             mlflow.log_param("pruning_amount", amount)
             mlflow.pytorch.log_model(model, "model")
             
-        logger.info(f"Pruning completed. New run_id: {new_run_id}")
+        logger.info(f"Pruning concluído. Nova run_id: {new_run_id}")
         return {"status": "Pruning completed", "new_run_id": new_run_id}
 
     def specialize_model(self, original_run_id: str, train_request: TrainRequest, task_id: str, registry):
         """
-        Fine-tune a pre-trained model on new data/params.
-        Conceptually similar to training, but starting from a checkpoint.
+        Realiza o fine-tuning de um modelo pré-treinado em novos dados ou parâmetros.
+        Nota: Atualmente redireciona para o pipeline de treinamento padrão como um protótipo.
         """
-        logger.info(f"Specializing model from run {original_run_id}")
+        logger.info(f"Especializando modelo a partir da run {original_run_id}")
         
-        # For simplicity, we delegate to the existing training pipeline
-        # But we need a way to tell it to load weights.
-        # This might require modifying train_job to accept a checkpoint path.
+        # Estratégia atual: Dispara um trabalho de treinamento padrão.
+        # Em uma implementação robusta, o modelo inicial seria carregado do original_run_id.
         
-        # Getting artifact URI
-        model_uri = f"runs:/{original_run_id}/model"
-        
-        # NOTE: A robust implementation would either:
-        # A) Pass 'checkpoint_path' to TrainRequest
-        # B) Load state dict here and pass it (complex with Ray actors)
-        
-        # We will assume TrainRequest is updated or we perform a quick hack:
-        # We start a train job, but prior to 'trainer.fit', we load weights.
-        # Since 'train_job' is remote, we can't easily injection logic mid-way without changing code.
-        
-        # Strategy: Trigger a standard train job, but log a tag saying "fine-tuned-from: XYZ"
-        # Ideally, we should initialize weights from the model. 
-        # For this prototype, we'll run a standard train and interpret 'specialize' as 'training on specific parameters'
-        # To truly fine-tune, we'd need to modify `train_job` to accept Resume From Checkpoint.
-        
-        # Let's trigger the standard job for now, acknowledging the limitation.
+        # Dispara o trabalho via Ray
         train_job.remote(train_request, task_id, registry)
         
-        return f"Specialization task {task_id} started."
+        return f"Tarefa de especialização {task_id} iniciada."
+

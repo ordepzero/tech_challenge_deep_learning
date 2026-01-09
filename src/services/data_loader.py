@@ -8,12 +8,13 @@ from pathlib import Path
 from datetime import datetime
 import logging
 
+# Configuração do logger para o módulo
 logger = logging.getLogger(__name__)
 
 class StockDataLoader:
     """
     Classe para baixar e salvar dados históricos de ativos financeiros
-    usando a biblioteca yfinance.
+    usando a biblioteca yfinance. Gerencia diretórios brutos (raw) e processados.
     """
 
     def __init__(self, 
@@ -36,7 +37,6 @@ class StockDataLoader:
     def _get_save_path(self, base_path: Path, ticker: str) -> Path:
         """
         Gera um caminho de arquivo versionado pela data atual (YYYY-MM-DD).
-
         Se chamado várias vezes no mesmo dia para o mesmo ticker, retornará o mesmo caminho.
         """
         safe_ticker_name = ticker.replace(".", "_")
@@ -46,7 +46,9 @@ class StockDataLoader:
         return ticker_dir / f"{today_str}.csv"
 
     def _get_latest_file_path(self, base_path: Path, ticker: str) -> Path:
-        """Encontra o arquivo mais recente para um determinado ticker."""
+        """
+        Encontra o arquivo CSV mais recente para um determinado ticker dentro de um diretório base.
+        """
         safe_ticker_name = ticker.replace(".", "_")
         ticker_dir = base_path / safe_ticker_name
 
@@ -57,33 +59,37 @@ class StockDataLoader:
         if not files:
             raise FileNotFoundError(f"Nenhum arquivo CSV encontrado para o ticker '{ticker}' em '{ticker_dir}'.")
 
-        # Ordena os arquivos pela data no nome (mais recente primeiro) e pega o primeiro
-        # O nome do arquivo já é a data, então a ordenação de string funciona
+        # Ordena os arquivos pela data no nome (mais recente primeiro)
         latest_file = sorted(files, key=lambda f: f.name, reverse=True)[0]
         return latest_file
 
     def save_raw(self, df: pd.DataFrame, ticker: str) -> str:
-        """Salva um DataFrame de dados brutos."""
+        """
+        Salva um DataFrame de dados brutos em formato CSV.
+        """
         file_path = self._get_save_path(self.raw_path, ticker)
         df.to_csv(file_path)
         logger.info(f"Dados brutos salvos em: '{file_path}'")
         return file_path
     
     def save_processed(self, df: pd.DataFrame, ticker: str) -> str:
-        """Salva um DataFrame de dados processados."""
+        """
+        Salva um DataFrame de dados processados em formato CSV.
+        """
         file_path = self._get_save_path(self.processed_path, ticker)
         df.to_csv(file_path)
         logger.info(f"Dados processados salvos em: '{file_path}'")
         return file_path
 
     def load_raw(self, ticker: str, start: Optional[str] = None, end: Optional[str] = None) -> pd.DataFrame:
-        """Carrega o conjunto de dados brutos mais recente para um ticker."""
+        """
+        Carrega o conjunto de dados brutos mais recente para um ticker, com opção de filtro de datas.
+        """
         file_path = self._get_latest_file_path(self.raw_path, ticker)
         logger.info(f"Carregando dados brutos de: '{file_path}'")
         df = pd.read_csv(str(file_path), index_col="Date", parse_dates=True)
 
         if start or end:
-            # Garante que o índice seja do tipo Datetime para a filtragem funcionar
             df.index = pd.to_datetime(df.index)
             df = df.loc[start:end]
             logger.info(f"Dados filtrados entre {start or 'início'} e {end or 'fim'}.")
@@ -91,23 +97,20 @@ class StockDataLoader:
         return df
 
     def load_processed(self, ticker: str) -> pd.DataFrame:
-        """Carrega o conjunto de dados processados mais recente para um ticker."""
+        """
+        Carrega o conjunto de dados processados mais recente para um ticker.
+        """
         file_path = self._get_latest_file_path(self.processed_path, ticker)
         logger.info(f"Carregando dados processados de: '{file_path}'")
-        # Adapte os parâmetros de leitura se o formato processado for diferente
         df = pd.read_csv(str(file_path), index_col=0, parse_dates=True)
         return df
 
     def get_latest_file_path(self, ticker: str, kind: str = "raw") -> str:
         """
-        Retorna o caminho do arquivo mais recente para o ticker especificado.
-
+        Retorna o caminho absoluto do arquivo mais recente para o ticker especificado.
         Args:
-            ticker (str): O símbolo do ativo (ex: "NVDA").
-            kind (str): "raw" para dados brutos ou "processed" para processados.
-
-        Returns:
-            str: O caminho absoluto do arquivo.
+            ticker (str): Símbolo do ativo.
+            kind (str): Tipo dos dados ('raw' ou 'processed').
         """
         if kind == "raw":
             base_path = self.raw_path
@@ -128,13 +131,7 @@ class StockDataLoader:
         end: Optional[str] = None,
     ) -> pd.DataFrame:
         """
-        Baixa os dados históricos de um ticker e retorna como um DataFrame.
-
-        Args:
-            (mesmos argumentos do método original)
-
-        Returns:
-            pd.DataFrame: DataFrame com os dados históricos.
+        Baixa os dados históricos de um ticker via yfinance e retorna como um DataFrame.
         """
         logger.info(f"Iniciando download para o ticker: '{ticker}'...")
         stock = yf.Ticker(ticker)
@@ -161,22 +158,6 @@ class StockDataLoader:
     ) -> str:
         """
         Orquestra o download e o salvamento dos dados históricos brutos.
-
-        Args: (mesmos argumentos do método original)
-            ticker (str): O símbolo do ativo a ser baixado (ex: "NVDA", "PETR4.SA").
-            period (str, optional): O período de dados a ser baixado.
-                Valores válidos: "1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max".
-                Padrão é "max".
-            interval (str, optional): O intervalo dos dados.
-                Valores válidos: "1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo", "3mo".
-                Padrão é "1d".
-            start (Optional[str], optional): A data de início no formato "YYYY-MM-DD".
-                Se fornecido, sobrescreve 'period'. Padrão é None.
-            end (Optional[str], optional): A data de fim no formato "YYYY-MM-DD".
-                Padrão é None.
-
-        Returns:
-            str: O caminho completo para o arquivo CSV salvo.
         """
         try:
             # 1. Baixa os dados
@@ -185,11 +166,9 @@ class StockDataLoader:
             file_path = self.save_raw(data, ticker)
             return str(file_path)
         except ValueError as ve:
-            # Relança o erro de valor para que o chamador possa tratá-lo
             logger.error(f"Erro de validação: {ve}")
             raise
         except Exception as e:
-            # Captura outras exceções (ex: rede, erros internos do yfinance)
             error_message = f"Ocorreu um erro inesperado ao baixar dados para '{ticker}': {e}"
             logger.error(error_message)
             raise Exception(error_message) from e
@@ -197,12 +176,13 @@ class StockDataLoader:
 
 
 if __name__ == "__main__":
+    # Exemplo de uso e teste das funções do DataLoader
     logging.basicConfig(level=logging.INFO)
     custom_base_path = r"D:\arquivos_antigos\Projetos\Alura\DeepLearning_pytorch\stock_price_prediction"
     
     loader = StockDataLoader(raw_path=f"{custom_base_path}/data/raw", processed_path=f"{custom_base_path}/data/processed")
 
-    # 1: Baixar e salvar dados históricos da API YFinance
+    # Baixar e salvar dados históricos
     try:
         loader.download_and_save_history(ticker="NVDA", period="1y")
     except Exception as e:
@@ -210,7 +190,7 @@ if __name__ == "__main__":
 
     logger.info("="*50)
 
-    # 2: Carregar os dados brutos que acabamos de salvar
+    # Carregar os dados brutos
     try:
         df_nvda = loader.load_raw(ticker="NVDA")
         logger.info("Últimos 5 registros da NVIDIA:")
@@ -220,18 +200,16 @@ if __name__ == "__main__":
 
     logger.info("="*50)
 
-    # 3: Salvar um DataFrame processado
+    # Simular processamento e salvar
     try:
         df_nvda_raw = loader.load_raw("NVDA")
-
-        # Simula um processamento: cria uma coluna de média móvel
         df_processed = df_nvda_raw.copy()
         df_processed['SMA_20'] = df_processed['Close'].rolling(window=20).mean()
         loader.save_processed(df_processed, "NVDA")
 
-        # Carrega o dado processado para verificar
         df_check = loader.load_processed("NVDA")
         logger.info("Últimos 5 registros do DataFrame PROCESSADO da NVIDIA:")
         logger.info(df_check.tail())
-    except ValueError as e:
-        logger.error(f"Erro capturado como esperado: {e}")
+    except Exception as e:
+        logger.error(f"Erro no processamento: {e}")
+

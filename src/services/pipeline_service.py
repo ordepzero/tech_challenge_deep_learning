@@ -1,4 +1,3 @@
-
 from lightning import LightningModule, Trainer
 from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 from lightning.pytorch.loggers import MLFlowLogger
@@ -18,57 +17,74 @@ from src.registry.task_registry import TaskRegistry
 import logging
 import mlflow
 
-# Configuração base do logger
+# Configuração base do logger para trabalhos de treinamento
 logger = logging.getLogger("train_job")
 
 def configure_logging(level_name: str):
+    """
+    Configura dinamicamente o nível de log para a execução atual.
+    """
     level = getattr(logging, level_name.upper(), logging.INFO)
     logging.basicConfig(level=level)
     logger.setLevel(level)
-    # Ajusta loggers do Ray e Lightning se necessário
+    # Ajusta os loggers das bibliotecas dependentes para manter consistência
     logging.getLogger("ray").setLevel(level)
     logging.getLogger("lightning").setLevel(level)
 
 @ray.remote(num_gpus=1)
 def train_job(config: TrainRequest, task_id: str, registry: TaskRegistry):
+    """
+    Função remota do Ray para orquestrar um trabalho de treinamento completo.
+    """
     try:
         configure_logging(config.log_level)
-        logger.info(f"Starting task {task_id} with log level {config.log_level}")
+        logger.info(f"Iniciando tarefa {task_id} com nível de log {config.log_level}")
         
         run_train(config, task_id)
         
+        # Atualiza o status no TaskRegistry como concluído
         ray.get(registry.set.remote(task_id, "completed"))
-        logger.info(f"Task {task_id} completed successfully.")
+        logger.info(f"Tarefa {task_id} concluída com sucesso.")
     except Exception as e:
-        logger.error(f"Task {task_id} failed: {e}", exc_info=True)
+        logger.error(f"Tarefa {task_id} falhou: {e}", exc_info=True)
+        # Registra a falha no TaskRegistry
         ray.get(registry.set.remote(task_id, f"failed: {e}"))
 
 
 def run_train(config: TrainRequest, task_id: str):
-    logger.info("Inside training function, detected GPUs on node: %s", torch.cuda.device_count())
+    """
+    Lógica principal de treinamento utilizando PyTorch Lightning e integração com MLflow.
+    """
+    logger.info("Dentro da função de treinamento, GPUs detectadas no nó: %s", torch.cuda.device_count())
 
-    # Inicializa MLFlow Logger
+    # Inicializa a configuração do MLflow com banco de dados SQLite para visibilidade na UI
     import os
-    tracking_uri = "file:///app/mlruns" if os.path.exists("/app") else "file:./mlruns"
+    if os.path.exists("/app"):
+        tracking_uri = "sqlite:////app/mlflow.db"
+    else:
+        tracking_uri = "sqlite:///mlflow.db"
+        
     mlflow.set_tracking_uri(tracking_uri)
     mlflow.set_experiment("stock_price_prediction")
     
+    # Configura o Logger do Lightning para o MLflow
     mlflow_logger = MLFlowLogger(experiment_name="stock_price_prediction", run_name=task_id, tracking_uri=tracking_uri)
     
-    # Log dos parâmetros iniciais
+    # Log dos hiperparâmetros iniciais
     mlflow_logger.log_hyperparams(config.dict())
 
-    base_path = "."
+    base_path = "." # Assume execução no diretório raiz do projeto
     loader = StockDataLoader(raw_path=f"{base_path}/data/raw",
                              processed_path=f"{base_path}/data/processed")
 
-    # TODO: Parametrizar ticker se necessário, por enquanto hardcoded como no original
+    # Obtém o arquivo de dados mais recente (atualmente fixado para NVDA)
     filename_path = loader.get_latest_file_path("NVDA", kind="raw")
-    logger.info(f"Using file: {filename_path}")
+    logger.info(f"Usando arquivo de dados: {filename_path}")
     
-    # Log do dataset usado
+    # Registra o caminho do dataset como parâmetro no MLflow
     mlflow_logger.experiment.log_param(mlflow_logger.run_id, "dataset_path", filename_path)
 
+    # Inicializa o DataModule para séries temporais
     data_module = TimeSeriesDataModule(
         csv_path=filename_path,
         value_col="Close",
@@ -76,8 +92,11 @@ def run_train(config: TrainRequest, task_id: str):
         batch_size=32
     )
     data_module.setup()
+    
+    # Cria o modelo através da factory com base na configuração
     model = ModelFactory.create(config)
 
+    # Configuração de callbacks: Checkpoint e Early Stopping
     checkpoint_callback = ModelCheckpoint(
         monitor='val_loss',
         dirpath='checkpoints',
@@ -93,12 +112,12 @@ def run_train(config: TrainRequest, task_id: str):
         mode='min'
     )
 
-    # --- Escolha automática da estratégia ---
+    # Estratégia de treinamento: Decide entre treinamento local ou distribuído com RayDDP
     num_gpus = torch.cuda.device_count()
-    logger.info(f"GPUs available for strategy: {num_gpus}")
+    logger.info(f"GPUs disponíveis para a estratégia: {num_gpus}")
 
     if num_gpus > 1:
-        logger.info("Using RayDDPStrategy for distributed training...")
+        logger.info("Usando RayDDPStrategy para treinamento distribuído...")
         trainer = Trainer(
             max_epochs=200,
             accelerator="gpu",
@@ -108,10 +127,10 @@ def run_train(config: TrainRequest, task_id: str):
             logger=mlflow_logger,
             enable_progress_bar=(config.log_level == "DEBUG")
         )
+        # Prepara o trainer para integração com o ecossistema Ray Train
         trainer = ray.train.lightning.prepare_trainer(trainer)
     else:
-        logger.info("Using local training (CPU or 1 GPU)...")
-        # Se tiver 1 GPU, usa. Se 0, usa CPU (auto)
+        logger.info("Usando treinamento local (CPU ou 1 GPU)...")
         devices = 1 if num_gpus > 0 else "auto"
         accelerator = "gpu" if num_gpus > 0 else "cpu"
         
@@ -124,26 +143,28 @@ def run_train(config: TrainRequest, task_id: str):
             enable_progress_bar=(config.log_level == "DEBUG")
         )
 
-    # --- Treinamento ---
-    logger.info("Starting training loop...")
+    # Início do ciclo de treinamento
+    logger.info("Iniciando loop de treinamento...")
     trainer.fit(model, datamodule=data_module)
 
-    logger.info("Starting testing with best model...")   
+    # Execução de testes com o melhor modelo encontrado
+    logger.info("Iniciando fase de testes com o melhor modelo...")   
     trainer.test(model, datamodule=data_module)
     
-    # Salvar o melhor modelo no MLFlow
+    # Salvamento e registro do melhor modelo no MLflow
     best_model_path = checkpoint_callback.best_model_path
     if best_model_path:
-        logger.info(f"Best model path: {best_model_path}")
+        logger.info(f"Caminho do melhor modelo: {best_model_path}")
+        # Loga o arquivo de checkpoint como artefato
         mlflow_logger.experiment.log_artifact(mlflow_logger.run_id, best_model_path, artifact_path="best_checkpoint")
         
-        # Logar o modelo como artefato do MLFlow (PyTorch format)
-        # Carrega o melhor modelo para salvar no formato padrão do MLflow
-        best_model = ModelFactory.create(config) # Re-instanciar arquitetura
+        # Registra o modelo no formato nativo do MLflow (PyTorch)
+        best_model = ModelFactory.create(config) # Re-instancia a arquitetura
         checkpoint = torch.load(best_model_path)
         best_model.load_state_dict(checkpoint['state_dict'])
         
         with mlflow.start_run(run_id=mlflow_logger.run_id):
             mlflow.pytorch.log_model(best_model, artifact_path="model")
 
-    logger.info("Training finished successfully!")
+    logger.info("Treinamento finalizado com sucesso!")
+

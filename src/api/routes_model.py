@@ -15,53 +15,68 @@ from datetime import datetime
 from src.services.data_loader import StockDataLoader
 import os
 
+# Configuração do logger uvicorn
 logger = logging.getLogger("uvicorn")
 
 router = APIRouter(prefix="/models", tags=["models"])
-registry = None # Will be initialized on startup
+registry = None # Será inicializado no startup
 
-# Get base path for data (handling both local and container)
-BASE_DATA_PATH = "." # Or /app in container
+# Define o caminho base para os dados (suporta local e container)
+BASE_DATA_PATH = "." # Ou /app no container
 LOADER = StockDataLoader(
     raw_path=f"{BASE_DATA_PATH}/data/raw",
     processed_path=f"{BASE_DATA_PATH}/data/processed"
 )
 
-# Global cache for loaded models (simple in-memory storage)
+# Cache global para modelos carregados (armazenamento simples em memória)
 LOADED_MODELS = {}
 
 def get_registry():
+    """
+    Obtém ou inicializa o TaskRegistry como um ator do Ray.
+    Utiliza um ator 'detached' para que persista mesmo que o app FastAPI reinicie.
+    """
     global registry
     if registry is None:
         try:
             registry = ray.get_actor("task_registry")
         except ValueError:
-            # Create a detached actor so it persists even if the FastAPI app restarts
+            # Cria um ator desacoplado para persistência
             registry = TaskRegistry.options(name="task_registry", lifetime="detached").remote()
     return registry
 
 @router.get("/")
 def list_models():
-    """List all models/runs tracked by MLflow."""
+    """
+    Lista todos os modelos e execuções (runs) rastreados pelo MLflow.
+    """
     manager = MLFlowManager()
     runs = manager.list_runs()
     return APIResponse(status="success", message="Modelos listados do MLflow", data=runs)
 
 @router.get("/list_tasks")
 def list_tasks():
+    """
+    Lista todas as tarefas de background registradas no TaskRegistry.
+    """
     reg = get_registry()
     tasks = ray.get(reg.list.remote())
     return APIResponse(status="success", message="Lista de tarefas", data=tasks)
 
 @router.get("/status/{task_id}")
 def get_status(task_id: str):
+    """
+    Obtém o status de uma tarefa específica via task_id.
+    """
     reg = get_registry()
     state = ray.get(reg.get.remote(task_id))
     return APIResponse(status="success", message="Status da tarefa", data=state)
 
 @router.get("/{run_id}")
 def get_model(run_id: str):
-    """Get details of a specific model/run."""
+    """
+    Obtém os detalhes de um modelo/run específico no MLflow.
+    """
     manager = MLFlowManager()
     try:
         details = manager.get_run_details(run_id)
@@ -71,9 +86,11 @@ def get_model(run_id: str):
 
 @router.post("/train")
 def train_new_models(request: TrainRequest):
-    """Start a new training job."""
+    """
+    Inicia um novo trabalho de treinamento de modelo.
+    """
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    # Safe access to value if it's an enum, otherwise use string
+    # Acesso seguro ao valor se for um enum, caso contrário usa string
     model_type_str = getattr(request.model_type, "value", str(request.model_type))
     
     model_id = f"{model_type_str}_{timestamp}"
@@ -91,7 +108,9 @@ def train_new_models(request: TrainRequest):
 
 @router.post("/tune")
 def tune_models(request: TrainRequest, background_tasks: BackgroundTasks):
-    """Start hyperparameter tuning."""
+    """
+    Inicia a otimização de hiperparâmetros (tuning).
+    """
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     model_type_str = getattr(request.model_type, "value", str(request.model_type))
     
@@ -100,27 +119,32 @@ def tune_models(request: TrainRequest, background_tasks: BackgroundTasks):
     reg.set.remote(task_id, "running")
 
     def tuning_wrapper(req, t_id, registry_actor):
+        """
+        Wrapper para executar o tuning em background e atualizar o registro de tarefas.
+        """
         try:
             result = tune_model(req)
-            # result is now a dict with {"config": ..., "run_id": ...}
+            # result agora é um dicionário com {"config": ..., "run_id": ...}
             ray.get(registry_actor.set.remote(t_id, {"status": "completed", "run_id": result.get("run_id")}))
         except Exception as e:
-            logger.error(f"Tuning failed: {e}", exc_info=True)
+            logger.error(f"Falha no tuning: {e}", exc_info=True)
             ray.get(registry_actor.set.remote(t_id, f"failed: {e}"))
 
-    # Running tuning in background to avoid blocking API
+    # Executa o tuning em background para não bloquear a API
     background_tasks.add_task(tuning_wrapper, request, task_id, reg)
     return APIResponse(status="success", message="Otimização de hiperparâmetros iniciada em background.", data={"task_id": task_id})
 
 @router.post("/{run_id}/load")
 def load_model(run_id: str):
-    """Load a model from MLflow into memory for prediction."""
+    """
+    Carrega um modelo do MLflow para a memória para fins de predição.
+    """
     manager = MLFlowManager()
     try:
         model = manager.load_model(run_id)
-        model.eval() # Set to eval mode
+        model.eval() # Define para o modo de avaliação
         LOADED_MODELS[run_id] = model
-        logger.info(f"Model {run_id} loaded. Current keys: {list(LOADED_MODELS.keys())}")
+        logger.info(f"Modelo {run_id} carregado. Chaves atuais: {list(LOADED_MODELS.keys())}")
         return APIResponse(status="success", message=f"Modelo {run_id} carregado na memória.")
     except Exception as e:
         logger.error(f"Erro ao carregar modelo {run_id}: {e}")
@@ -128,9 +152,11 @@ def load_model(run_id: str):
 
 @router.post("/predict")
 def predict(request: PredictionRequest):
-    """Make a prediction with automatic normalization and window completion."""
+    """
+    Realiza uma predição com normalização automática e preenchimento de janela de dados.
+    """
     run_id = request.model_run_id
-    logger.info(f"Predict request for {run_id}. Ticker: {request.ticker}")
+    logger.info(f"Requisição de predição para {run_id}. Ticker: {request.ticker}")
     
     if run_id not in LOADED_MODELS:
         raise HTTPException(status_code=400, detail=f"Modelo não carregado. ID solicitado: '{run_id}'. Disponíveis: {list(LOADED_MODELS.keys())}")
@@ -140,7 +166,7 @@ def predict(request: PredictionRequest):
     
     input_data = request.data
     
-    # 0. Auto-completion of window if partial data provided
+    # 0. Preenchimento automático da janela se dados parciais forem fornecidos
     if len(input_data) < expected_window:
         if not request.ticker:
             raise HTTPException(
@@ -159,10 +185,6 @@ def predict(request: PredictionRequest):
                  raise HTTPException(status_code=400, detail=f"Histórico insuficiente no arquivo para o ticker {request.ticker}. Encontrados {len(history)} registros.")
             
             # Concatena: [Histórico Antigo] + [Dados do Usuário]
-            # Ex: se faltam 59, pega os 59 do CSV e coloca o valor do usuário no final
-            # Note: Usamos os valores *anteriores* aos fornecidos pelo usuário se possível, 
-            # mas o load_raw pega o fim do arquivo. 
-            # Idealmente, o 'request.data' é o preço MAIS ATUAL (hoje).
             input_data = history[-needed:] + input_data
             logger.info(f"Janela completada para {request.ticker}. Novos dados: {len(input_data)} valores.")
             
@@ -185,7 +207,7 @@ def predict(request: PredictionRequest):
     # Normaliza a janela: (valor / base) - 1
     data_norm = [(v / base_value) - 1 for v in input_data]
     
-    input_tensor = torch.tensor([data_norm], dtype=torch.float32) # Add batch dim
+    input_tensor = torch.tensor([data_norm], dtype=torch.float32) # Adiciona dimensão de batch
     
     try:
         model.eval()
@@ -211,12 +233,14 @@ def predict(request: PredictionRequest):
             }
         )
     except Exception as e:
-        logger.error(f"Error during prediction: {e}", exc_info=True)
+        logger.error(f"Erro durante a predição: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Erro na predição: {e}")
 
 @router.post("/{run_id}/prune")
 def prune_model_endpoint(run_id: str, amount: float = 0.2):
-    """Prune a specific model."""
+    """
+    Aplica pruning a um modelo específico.
+    """
     service = OptimizationService()
     try:
         result = service.prune_model(run_id, amount)
@@ -226,7 +250,9 @@ def prune_model_endpoint(run_id: str, amount: float = 0.2):
 
 @router.post("/{run_id}/specialize")
 def specialize_model_endpoint(run_id: str, request: TrainRequest):
-    """Specialize (fine-tune) a model."""
+    """
+    Inicia a especialização (fine-tuning) de um modelo.
+    """
     service = OptimizationService()
     task_id = f"specialize_{run_id}"
     reg = get_registry()
@@ -234,3 +260,4 @@ def specialize_model_endpoint(run_id: str, request: TrainRequest):
     
     service.specialize_model(run_id, request, task_id, reg)
     return APIResponse(status="success", message="Especialização iniciada", data={"task_id": task_id})
+

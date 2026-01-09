@@ -5,8 +5,10 @@ from src.schemas.response import APIResponse
 
 router = APIRouter(prefix="/data", tags=["data"])
 
-# Enum para períodos válidos
 class PeriodEnum(str, Enum):
+    """
+    Enumeração de períodos válidos para o download de dados históricos.
+    """
     d1 = "1d"
     d5 = "5d"
     mo1 = "1mo"
@@ -21,6 +23,16 @@ class PeriodEnum(str, Enum):
 
 @router.get("/download_history/{ticker}", response_model=APIResponse)
 def download_and_save_history(ticker: str, period: PeriodEnum = PeriodEnum.max):
+    """
+    Realiza o download e o salvamento do histórico de preços de uma ação.
+    
+    Args:
+        ticker (str): O código da ação (ex: NVDA, AAPL).
+        period (PeriodEnum): O período de tempo desejado para o histórico.
+        
+    Returns:
+        APIResponse: Resposta indicando sucesso ou erro no download.
+    """
     loader = StockDataLoader(raw_path="./data/raw", processed_path="./data/processed")
 
     try:

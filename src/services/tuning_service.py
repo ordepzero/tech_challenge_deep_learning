@@ -14,53 +14,57 @@ import os
 import glob
 import torch
 
+# Configuração do logger local
 logger = logging.getLogger(__name__)
 
 def tune_model(base_config: TrainRequest, num_samples: int = 10):
     """
-    Run hyperparameter tuning using Ray Tune.
+    Executa a otimização de hiperparâmetros (tuning) utilizando o Ray Tune.
+    
+    Args:
+        base_config (TrainRequest): Configurações base para o treinamento.
+        num_samples (int): Quantidade de amostras (trials) a serem executadas.
+        
+    Returns:
+        dict: Configuração do melhor trial e o ID da run correspondente no MLflow.
     """
     
-    logger.info(f"Tune Model called. base_config.model_type type: {type(base_config.model_type)}")
-    logger.info(f"base_config.model_type value: {base_config.model_type}")
+    logger.info(f"tune_model chamado. Tipo de base_config.model_type: {type(base_config.model_type)}")
+    logger.info(f"Valor de base_config.model_type: {base_config.model_type}")
 
     try:
         model_type_val = getattr(base_config.model_type, "value", str(base_config.model_type))
     except Exception as e:
-        logger.error(f"Error getting model_type value: {e}")
+        logger.error(f"Erro ao obter o valor de model_type: {e}")
         model_type_val = str(base_config.model_type)
 
-    # Define search space based on base_config
-    # This is a simple example; in a real scenario, the search space might be passed in
+    # Define o espaço de busca (search space) baseado no base_config
     search_space = {
         "learning_rate": tune.loguniform(1e-4, 1e-1),
         "hidden_dim": tune.choice([32, 64, 128]),
         "num_layers": tune.choice([1, 2, 3]),
         "dropout_prob": tune.uniform(0.1, 0.5),
-        # Keep other params fixed
+        # Parâmetros fixados
         "model_type": model_type_val,
         "window_size": base_config.window_size,
         "log_level": base_config.log_level
     }
 
+    # Utiliza o algoritmo ASHA para pruning precoce de trials ruins
     scheduler = ASHAScheduler(
         max_t=50,
         grace_period=1,
         reduction_factor=2
     )
     
-    # Define standard training function wrapper for Ray Tune
     def train_func(config_dict):
-        # Reconstruct TrainRequest from config_dict
+        """
+        Função de treinamento interna para o Ray Tune.
+        Adapta o treinamento do PyTorch Lightning para reportar métricas ao Tune.
+        """
+        # Reconstrói a TrainRequest a partir do dicionário de configuração
         request = TrainRequest(**config_dict)
-        # We need to adapt run_train to work with Ray Tune reporting
-        # For simplicity, we are calling the existing run_train logic
-        # Ideally, run_train should report metrics to Ray Tune
         
-        # NOTE: This requires refactoring run_train or using a specific Ray Train API
-        # Since run_train uses Lightning Trainer, we can integrate Ray Train Lightning
-        
-        # START inline adaptation of run_train for tuning context
         from src.services.data_loader import StockDataLoader
         from src.services.timeseries_data_module import TimeSeriesDataModule
         from src.models.factory import ModelFactory
@@ -71,17 +75,20 @@ def tune_model(base_config: TrainRequest, num_samples: int = 10):
         import shutil
         from ray.train import Checkpoint
 
-        # Determine explicit checkpoint directory in the current working dir (Trial dir)
+        # Determina o diretório de checkpoint específico dentro do diretório do trial
         trial_dir = os.getcwd()
         ckpt_dir = os.path.join(trial_dir, "checkpoints")
         os.makedirs(ckpt_dir, exist_ok=True)
-        logger.info(f"Trial Directory: {trial_dir}")
-        logger.info(f"Checkpoint Directory: {ckpt_dir}")
+        logger.info(f"Diretório do Trial: {trial_dir}")
+        logger.info(f"Diretório de Checkpoints: {ckpt_dir}")
 
         class TuneReportCallback(Callback):
+            """
+            Callback do Lightning para reportar métricas e salvar checkpoints no Ray Tune.
+            """
             def on_validation_end(self, trainer, pl_module):
                 metrics = trainer.callback_metrics
-                logger.info(f"Validation keys: {list(metrics.keys())}") 
+                logger.info(f"Chaves de validação: {list(metrics.keys())}") 
                 
                 report_dict = {}
                 for k, v in metrics.items():
@@ -90,11 +97,11 @@ def tune_model(base_config: TrainRequest, num_samples: int = 10):
                     else:
                         report_dict[k] = v
                 
-                # Manually save checkpoint to ensure it exists
+                # Salva manualmente o checkpoint para garantir sua existência
                 ckpt_path = os.path.join(ckpt_dir, "checkpoint.ckpt")
                 trainer.save_checkpoint(ckpt_path)
                 
-                # Report metrics AND checkpoint to Ray Tune
+                # Reporta métricas E o checkpoint ao Ray Tune
                 ray.tune.report(
                     report_dict, 
                     checkpoint=Checkpoint.from_directory(ckpt_dir)
@@ -102,7 +109,7 @@ def tune_model(base_config: TrainRequest, num_samples: int = 10):
 
             def on_train_end(self, trainer, pl_module):
                 if os.path.exists(ckpt_dir):
-                    logger.info(f"Train end. Checkpoints: {os.listdir(ckpt_dir)}")
+                    logger.info(f"Treinamento finalizado. Checkpoints: {os.listdir(ckpt_dir)}")
 
         base_path = "/app" if os.path.exists("/app") else "."
         loader = StockDataLoader(raw_path=f"{base_path}/data/raw", processed_path=f"{base_path}/data/processed")
@@ -115,8 +122,10 @@ def tune_model(base_config: TrainRequest, num_samples: int = 10):
             batch_size=32
         )
         data_module.setup()
+        
         model = ModelFactory.create(request)
         
+        # Inicializa o Trainer do Lightning com o callback de reporte ao Tune
         trainer = Trainer(
             max_epochs=10,
             accelerator="auto",
@@ -125,13 +134,12 @@ def tune_model(base_config: TrainRequest, num_samples: int = 10):
             callbacks=[TuneReportCallback()]
         )
         trainer.fit(model, datamodule=data_module)
-        # END inline adaptation
 
-    
+    # Configura e executa o sintonizador (Tuner) do Ray
     tuner = tune.Tuner(
         tune.with_resources(
             tune.with_parameters(train_func),
-            resources={"cpu": 1, "gpu": 0.5} 
+            resources={"cpu": 1, "gpu": 0.5} # Aloca recursos fracionários de GPU de forma otimizada
         ),
         param_space=search_space,
         tune_config=tune.TuneConfig(
@@ -151,25 +159,31 @@ def tune_model(base_config: TrainRequest, num_samples: int = 10):
     results = tuner.fit()
     best_result = results.get_best_result(metric="val_loss", mode="min")
     
-    logger.info(f"Best trial config: {best_result.config}")
+    logger.info(f"Configuração do melhor trial: {best_result.config}")
     
     mlflow_run_id = None
     
-    # Log best result to MLflow as a separate run or tag
+    # Registra o melhor resultado no MLflow em uma nova execução (run)
+    # Configura a URI para o banco SQLite para sincronizar com a UI
+    if os.path.exists("/app"):
+        mlflow.set_tracking_uri("sqlite:////app/mlflow.db")
+    else:
+        mlflow.set_tracking_uri("sqlite:///mlflow.db")
+
     mlflow.set_experiment("stock_price_prediction")
     with mlflow.start_run(run_name="tuning_best_result") as run:
         mlflow_run_id = run.info.run_id
         mlflow.log_params(best_result.config)
         mlflow.log_metric("best_val_loss", best_result.metrics["val_loss"])
         
-        # Locate and log the best model artifact
+        # Localiza e registra o melhor artefato de modelo (checkpoint)
         try:
             if best_result.checkpoint:
                 with best_result.checkpoint.as_directory() as checkpoint_dir:
                      ckpt_files = glob.glob(os.path.join(checkpoint_dir, "*.ckpt"))
                      if ckpt_files:
                         best_ckpt_path = ckpt_files[0]
-                        logger.info(f"Found best checkpoint at: {best_ckpt_path}")
+                        logger.info(f"Melhor checkpoint encontrado em: {best_ckpt_path}")
                         
                         best_config = TrainRequest(**best_result.config)
                         model = ModelFactory.create(best_config)
@@ -177,13 +191,13 @@ def tune_model(base_config: TrainRequest, num_samples: int = 10):
                         model.load_state_dict(checkpoint['state_dict'])
                         
                         mlflow.pytorch.log_model(model, artifact_path="model")
-                        logger.info("Best model logged to MLflow successfully.")
+                        logger.info("Melhor modelo registrado no MLflow com sucesso.")
                      else:
-                        logger.warning(f"No .ckpt files found in checkpoint dir {checkpoint_dir}")
+                        logger.warning(f"Nenhum arquivo .ckpt encontrado no diretório {checkpoint_dir}")
             else:
-                logger.warning("best_result.checkpoint is None. Falling back to path search...")
+                logger.warning("best_result.checkpoint é None. Falha ao recuperar checkpoint do trial.")
                 
         except Exception as e:
-            logger.error(f"Failed to log best model to MLflow: {e}", exc_info=True)
+            logger.error(f"Falha ao registrar o melhor modelo no MLflow: {e}", exc_info=True)
 
     return {"config": best_result.config, "run_id": mlflow_run_id}
